@@ -209,6 +209,11 @@ class EventStore:
             ],
         }
 
+    def clear(self):
+        """Clear all traces from the event store."""
+        with self._lock:
+            self._traces.clear()
+
 
 # Global event store instance
 event_store = EventStore()
