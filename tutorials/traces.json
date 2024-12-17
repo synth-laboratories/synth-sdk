@@ -1,1 +1,240 @@
-[{"system_id": "test_agent_sync", "partition": [{"partition_index": 0, "events": [{"event_type": "environment_processing", "opened": 1732238453.367889, "closed": 1732238454.127567, "partition_index": 0, "agent_compute_steps": [], "environment_compute_steps": [{"event_order": 1, "compute_ended": 1732238453.367924, "compute_began": 1732238453.367889, "compute_input": [], "compute_output": [{"outputs": {"input_data": "What's the capital of France?"}}, {"outputs": {"input_data": "What's the capital of France?"}}, {"outputs": {"result": {"processed": "What's the capital of France?", "timestamp": 1732238453.367918}}}, {"outputs": {"result": {"processed": "What's the capital of France?", "timestamp": 1732238453.367918}}}]}]}, {"event_type": "environment_processing", "opened": 1732238454.127528, "closed": 1732238454.836017, "partition_index": 0, "agent_compute_steps": [], "environment_compute_steps": [{"event_order": 1, "compute_ended": 1732238454.127908, "compute_began": 1732238454.127528, "compute_input": [], "compute_output": [{"outputs": {"input_data": "What's 2+2?"}}, {"outputs": {"input_data": "What's 2+2?"}}, {"outputs": {"result": {"processed": "What's 2+2?", "timestamp": 1732238454.127887}}}, {"outputs": {"result": {"processed": "What's 2+2?", "timestamp": 1732238454.127887}}}]}]}]}, {"partition_index": 1, "events": [{"event_type": "lm_call", "opened": 1732238453.367946, "closed": 1732238454.128041, "partition_index": 1, "agent_compute_steps": [{"event_order": 1, "compute_ended": 1732238454.1273339, "compute_began": 1732238453.367946, "compute_input": [{"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "What's the capital of France?"}, {"role": "assistant", "content": "The capital of France is Paris."}]}, {"inputs": {"model_name": "gpt-4-0125-preview"}}, {"inputs": {"finetune": true}}], "compute_output": [{"outputs": {"user_message": "What's the capital of France?"}}, {"outputs": {"user_message": "What's the capital of France?"}}, {"outputs": {"response": "The capital of France is Paris."}}, {"outputs": {"result": "The capital of France is Paris."}}]}], "environment_compute_steps": []}]}, {"partition_index": 2, "events": [{"event_type": "lm_call", "opened": 1732238454.127991, "closed": 1732238454.836467, "partition_index": 2, "agent_compute_steps": [{"event_order": 1, "compute_ended": 1732238454.835826, "compute_began": 1732238454.127991, "compute_input": [{"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "What's 2+2?"}, {"role": "assistant", "content": "2+2 equals 4."}]}, {"inputs": {"model_name": "gpt-4-0125-preview"}}, {"inputs": {"finetune": true}}], "compute_output": [{"outputs": {"user_message": "What's 2+2?"}}, {"outputs": {"user_message": "What's 2+2?"}}, {"outputs": {"response": "2+2 equals 4."}}, {"outputs": {"result": "2+2 equals 4."}}]}], "environment_compute_steps": []}]}, {"partition_index": 3, "events": []}]}]
+[
+    {
+        "system_instance_id": "test_agent_sync",
+        "partition": [
+            {
+                "partition_index": 0,
+                "events": [
+                    {
+                        "event_type": "environment_processing",
+                        "opened": 1732238453.367889,
+                        "closed": 1732238454.127567,
+                        "partition_index": 0,
+                        "agent_compute_steps": [],
+                        "environment_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732238453.367924,
+                                "compute_began": 1732238453.367889,
+                                "compute_input": [],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's the capital of France?",
+                                                "timestamp": 1732238453.367918
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's the capital of France?",
+                                                "timestamp": 1732238453.367918
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "event_type": "environment_processing",
+                        "opened": 1732238454.127528,
+                        "closed": 1732238454.836017,
+                        "partition_index": 0,
+                        "agent_compute_steps": [],
+                        "environment_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732238454.127908,
+                                "compute_began": 1732238454.127528,
+                                "compute_input": [],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's 2+2?",
+                                                "timestamp": 1732238454.127887
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's 2+2?",
+                                                "timestamp": 1732238454.127887
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "partition_index": 1,
+                "events": [
+                    {
+                        "event_type": "lm_call",
+                        "opened": 1732238453.367946,
+                        "closed": 1732238454.128041,
+                        "partition_index": 1,
+                        "agent_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732238454.1273339,
+                                "compute_began": 1732238453.367946,
+                                "compute_input": [
+                                    {
+                                        "messages": [
+                                            {
+                                                "role": "system",
+                                                "content": "You are a helpful assistant."
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "What's the capital of France?"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "The capital of France is Paris."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "inputs": {
+                                            "model_name": "gpt-4-0125-preview"
+                                        }
+                                    },
+                                    {
+                                        "inputs": {
+                                            "finetune": true
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "response": "The capital of France is Paris."
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": "The capital of France is Paris."
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "environment_compute_steps": []
+                    }
+                ]
+            },
+            {
+                "partition_index": 2,
+                "events": [
+                    {
+                        "event_type": "lm_call",
+                        "opened": 1732238454.127991,
+                        "closed": 1732238454.836467,
+                        "partition_index": 2,
+                        "agent_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732238454.835826,
+                                "compute_began": 1732238454.127991,
+                                "compute_input": [
+                                    {
+                                        "messages": [
+                                            {
+                                                "role": "system",
+                                                "content": "You are a helpful assistant."
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "What's 2+2?"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "2+2 equals 4."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "inputs": {
+                                            "model_name": "gpt-4-0125-preview"
+                                        }
+                                    },
+                                    {
+                                        "inputs": {
+                                            "finetune": true
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "response": "2+2 equals 4."
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": "2+2 equals 4."
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "environment_compute_steps": []
+                    }
+                ]
+            },
+            {
+                "partition_index": 3,
+                "events": []
+            }
+        ]
+    }
+]

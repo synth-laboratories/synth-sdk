@@ -204,7 +204,7 @@
           "Classes"
         ],
         "summary": "abstractions.TrainingQuestion",
-        "description": "A training question is a question that an agent (system_id) is trying to answer.\nIt contains an intent and criteria that the agent is trying to meet.\n\n[View source on GitHub](https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py)",
+        "description": "A training question is a question that an agent (system_instance_id) is trying to answer.\nIt contains an intent and criteria that the agent is trying to meet.\n\n[View source on GitHub](https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py)",
         "externalDocs": {
           "description": "View source on GitHub",
           "url": "https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py"
@@ -235,7 +235,7 @@
           "Classes"
         ],
         "summary": "abstractions.RewardSignal",
-        "description": "A reward signal tells us how well an agent (system_id) is doing on a particular question (question_id).\n\n[View source on GitHub](https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py)",
+        "description": "A reward signal tells us how well an agent (system_instance_id) is doing on a particular question (question_id).\n\n[View source on GitHub](https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py)",
         "externalDocs": {
           "description": "View source on GitHub",
           "url": "https://github.com/synth-laboratories/synth-sdk/blob/main/synth_sdk/tracing/abstractions.py"

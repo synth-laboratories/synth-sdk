@@ -1,9 +1,10 @@
-from contextlib import contextmanager
 import time
+from contextlib import contextmanager
+
 from synth_sdk.tracing.abstractions import Event
-from synth_sdk.tracing.decorators import set_current_event, clear_current_event, _local
+from synth_sdk.tracing.decorators import _local, clear_current_event, set_current_event
 from synth_sdk.tracing.events.store import event_store
-from synth_sdk.tracing.local import system_id_var
+from synth_sdk.tracing.local import system_instance_id_var
 
 
 @contextmanager
@@ -18,16 +19,21 @@ def event_scope(event_type: str):
     # Check if we're in an async context
     try:
         import asyncio
+
         asyncio.get_running_loop()
         is_async = True
     except RuntimeError:
         is_async = False
 
-    # Get system_id from appropriate source
-    system_id = system_id_var.get() if is_async else getattr(_local, "system_id", None)
-    
+    # Get system_instance_id from appropriate source
+    system_instance_id = (
+        system_instance_id_var.get()
+        if is_async
+        else getattr(_local, "system_instance_id", None)
+    )
+
     event = Event(
-        system_id=system_id,
+        system_instance_id=system_instance_id,
         event_type=event_type,
         opened=time.time(),
         closed=None,
@@ -42,6 +48,6 @@ def event_scope(event_type: str):
     finally:
         event.closed = time.time()
         clear_current_event(event_type)
-        # Store the event if system_id is available
-        if system_id:
-            event_store.add_event(system_id, event)
+        # Store the event if system_instance_id is available
+        if system_instance_id:
+            event_store.add_event(system_instance_id, event)

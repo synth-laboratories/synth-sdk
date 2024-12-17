@@ -1,9 +1,10 @@
-from dataclasses import dataclass
-from typing import Any, List, Dict, Optional, Union
-from datetime import datetime
-from pydantic import BaseModel
 import logging
-from synth_sdk.tracing.config import VALID_TYPES
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +40,15 @@ class ComputeStep:
     def to_dict(self):
         # Serialize compute_input
         serializable_input = [
-            input_item.__dict__ for input_item in self.compute_input
+            input_item.__dict__
+            for input_item in self.compute_input
             if isinstance(input_item, (MessageInputs, ArbitraryInputs))
         ]
 
         # Serialize compute_output
         serializable_output = [
-            output_item.__dict__ for output_item in self.compute_output
+            output_item.__dict__
+            for output_item in self.compute_output
             if isinstance(output_item, (MessageOutputs, ArbitraryOutputs))
         ]
 
@@ -59,8 +62,12 @@ class ComputeStep:
 
         return {
             "event_order": self.event_order,
-            "compute_ended": self.compute_ended.isoformat() if isinstance(self.compute_ended, datetime) else self.compute_ended,
-            "compute_began": self.compute_began.isoformat() if isinstance(self.compute_began, datetime) else self.compute_began,
+            "compute_ended": self.compute_ended.isoformat()
+            if isinstance(self.compute_ended, datetime)
+            else self.compute_ended,
+            "compute_began": self.compute_began.isoformat()
+            if isinstance(self.compute_began, datetime)
+            else self.compute_began,
             "compute_input": serializable_input,
             "compute_output": serializable_output,
         }
@@ -86,7 +93,7 @@ class EnvironmentComputeStep(ComputeStep):
 
 @dataclass
 class Event:
-    system_id: str
+    system_instance_id: str
     event_type: str
     opened: Any  # timestamp
     closed: Any  # timestamp
@@ -97,8 +104,12 @@ class Event:
     def to_dict(self):
         return {
             "event_type": self.event_type,
-            "opened": self.opened.isoformat() if isinstance(self.opened, datetime) else self.opened,
-            "closed": self.closed.isoformat() if isinstance(self.closed, datetime) else self.closed,
+            "opened": self.opened.isoformat()
+            if isinstance(self.opened, datetime)
+            else self.opened,
+            "closed": self.closed.isoformat()
+            if isinstance(self.closed, datetime)
+            else self.closed,
             "partition_index": self.partition_index,
             "agent_compute_steps": [
                 step.to_dict() for step in self.agent_compute_steps
@@ -124,6 +135,7 @@ class EventPartitionElement:
 @dataclass
 class SystemTrace:
     system_id: str
+    system_instance_id: str
     metadata: Optional[Dict[str, Any]]
     partition: List[EventPartitionElement]
     current_partition_index: int = 0  # Track current partition
@@ -131,17 +143,19 @@ class SystemTrace:
     def to_dict(self):
         return {
             "system_id": self.system_id,
+            "system_instance_id": self.system_instance_id,
             "partition": [element.to_dict() for element in self.partition],
             "current_partition_index": self.current_partition_index,
-            "metadata": self.metadata if self.metadata else None
+            "metadata": self.metadata if self.metadata else None,
         }
 
 
 class TrainingQuestion(BaseModel):
-    '''
-    A training question is a question that an agent (system_id) is trying to answer.
+    """
+    A training question is a question that an agent (system_instance_id) is trying to answer.
     It contains an intent and criteria that the agent is trying to meet.
-    '''
+    """
+
     id: str
     intent: str
     criteria: str
@@ -155,28 +169,30 @@ class TrainingQuestion(BaseModel):
 
 
 class RewardSignal(BaseModel):
-    '''
-    A reward signal tells us how well an agent (system_id) is doing on a particular question (question_id).
-    '''
+    """
+    A reward signal tells us how well an agent (system_instance_id) is doing on a particular question (question_id).
+    """
+
     question_id: str
-    system_id: str
+    system_instance_id: str
     reward: Union[float, int, bool]
     annotation: Optional[str] = None
 
     def to_dict(self):
         return {
             "question_id": self.question_id,
-            "system_id": self.system_id,
+            "system_instance_id": self.system_instance_id,
             "reward": self.reward,
             "annotation": self.annotation,
         }
 
 
 class Dataset(BaseModel):
-    '''
-    A dataset is a collection of training questions and reward signals. 
+    """
+    A dataset is a collection of training questions and reward signals.
     This better represents the data that is used to train a model, and gives us more information about the data.
-    '''
+    """
+
     questions: List[TrainingQuestion]
     reward_signals: List[RewardSignal]
 

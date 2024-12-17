@@ -1,1 +1,351 @@
-[{"system_id": "test_agent_async", "partition": [{"partition_index": 0, "events": [{"event_type": "environment_processing", "opened": 1732235276.8035352, "closed": 1732235277.7255611, "partition_index": 0, "agent_compute_steps": [], "environment_compute_steps": [{"event_order": 1, "compute_ended": 1732235276.803606, "compute_began": 1732235276.8035352, "compute_input": [{"inputs": {"input_data": "What's the capital of France?"}}], "compute_output": [{"outputs": {"input_data": "What's the capital of France?"}}, {"outputs": {"result": {"processed": "What's the capital of France?", "timestamp": 1732235276.803597}}}, {"outputs": {"result": {"processed": "What's the capital of France?", "timestamp": 1732235276.803597}}}]}]}, {"event_type": "environment_processing", "opened": 1732235277.725513, "closed": 1732235278.565709, "partition_index": 0, "agent_compute_steps": [], "environment_compute_steps": [{"event_order": 1, "compute_ended": 1732235277.72592, "compute_began": 1732235277.725513, "compute_input": [{"inputs": {"input_data": "What's 2+2?"}}], "compute_output": [{"outputs": {"input_data": "What's 2+2?"}}, {"outputs": {"result": {"processed": "What's 2+2?", "timestamp": 1732235277.725895}}}, {"outputs": {"result": {"processed": "What's 2+2?", "timestamp": 1732235277.725895}}}]}]}, {"event_type": "environment_processing", "opened": 1732235278.5656729, "closed": 1732235279.19231, "partition_index": 0, "agent_compute_steps": [], "environment_compute_steps": [{"event_order": 1, "compute_ended": 1732235278.566205, "compute_began": 1732235278.5656729, "compute_input": [{"inputs": {"input_data": "Who wrote Romeo and Juliet?"}}], "compute_output": [{"outputs": {"input_data": "Who wrote Romeo and Juliet?"}}, {"outputs": {"result": {"processed": "Who wrote Romeo and Juliet?", "timestamp": 1732235278.566155}}}, {"outputs": {"result": {"processed": "Who wrote Romeo and Juliet?", "timestamp": 1732235278.566155}}}]}]}]}, {"partition_index": 1, "events": [{"event_type": "lm_call", "opened": 1732235276.803635, "closed": 1732235277.726039, "partition_index": 1, "agent_compute_steps": [{"event_order": 1, "compute_ended": 1732235277.725227, "compute_began": 1732235276.803635, "compute_input": [{"inputs": {"user_message": "What's the capital of France?"}}, {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "What's the capital of France?"}, {"role": "assistant", "content": "The capital of France is Paris."}]}, {"inputs": {"model_name": "gpt-4-0613"}}, {"inputs": {"finetune": true}}], "compute_output": [{"outputs": {"user_message": "What's the capital of France?"}}, {"outputs": {"response": "The capital of France is Paris."}}, {"outputs": {"result": "The capital of France is Paris."}}]}], "environment_compute_steps": []}]}, {"partition_index": 2, "events": [{"event_type": "lm_call", "opened": 1732235277.725993, "closed": 1732235278.566485, "partition_index": 2, "agent_compute_steps": [{"event_order": 1, "compute_ended": 1732235278.565533, "compute_began": 1732235277.725993, "compute_input": [{"inputs": {"user_message": "What's 2+2?"}}, {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "What's 2+2?"}, {"role": "assistant", "content": "2+2 equals 4."}]}, {"inputs": {"model_name": "gpt-4-0613"}}, {"inputs": {"finetune": true}}], "compute_output": [{"outputs": {"user_message": "What's 2+2?"}}, {"outputs": {"response": "2+2 equals 4."}}, {"outputs": {"result": "2+2 equals 4."}}]}], "environment_compute_steps": []}]}, {"partition_index": 3, "events": [{"event_type": "lm_call", "opened": 1732235278.5664, "closed": 1732235279.192375, "partition_index": 3, "agent_compute_steps": [{"event_order": 1, "compute_ended": 1732235279.1919549, "compute_began": 1732235278.5664, "compute_input": [{"inputs": {"user_message": "Who wrote Romeo and Juliet?"}}, {"messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Who wrote Romeo and Juliet?"}, {"role": "assistant", "content": "William Shakespeare wrote Romeo and Juliet."}]}, {"inputs": {"model_name": "gpt-4-0613"}}, {"inputs": {"finetune": true}}], "compute_output": [{"outputs": {"user_message": "Who wrote Romeo and Juliet?"}}, {"outputs": {"response": "William Shakespeare wrote Romeo and Juliet."}}, {"outputs": {"result": "William Shakespeare wrote Romeo and Juliet."}}]}], "environment_compute_steps": []}]}]}]
+[
+    {
+        "system_instance_id": "test_agent_async",
+        "partition": [
+            {
+                "partition_index": 0,
+                "events": [
+                    {
+                        "event_type": "environment_processing",
+                        "opened": 1732235276.8035352,
+                        "closed": 1732235277.7255611,
+                        "partition_index": 0,
+                        "agent_compute_steps": [],
+                        "environment_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235276.803606,
+                                "compute_began": 1732235276.8035352,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "input_data": "What's the capital of France?"
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's the capital of France?",
+                                                "timestamp": 1732235276.803597
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's the capital of France?",
+                                                "timestamp": 1732235276.803597
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "event_type": "environment_processing",
+                        "opened": 1732235277.725513,
+                        "closed": 1732235278.565709,
+                        "partition_index": 0,
+                        "agent_compute_steps": [],
+                        "environment_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235277.72592,
+                                "compute_began": 1732235277.725513,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "input_data": "What's 2+2?"
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "input_data": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's 2+2?",
+                                                "timestamp": 1732235277.725895
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "What's 2+2?",
+                                                "timestamp": 1732235277.725895
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "event_type": "environment_processing",
+                        "opened": 1732235278.5656729,
+                        "closed": 1732235279.19231,
+                        "partition_index": 0,
+                        "agent_compute_steps": [],
+                        "environment_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235278.566205,
+                                "compute_began": 1732235278.5656729,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "input_data": "Who wrote Romeo and Juliet?"
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "input_data": "Who wrote Romeo and Juliet?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "Who wrote Romeo and Juliet?",
+                                                "timestamp": 1732235278.566155
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": {
+                                                "processed": "Who wrote Romeo and Juliet?",
+                                                "timestamp": 1732235278.566155
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "partition_index": 1,
+                "events": [
+                    {
+                        "event_type": "lm_call",
+                        "opened": 1732235276.803635,
+                        "closed": 1732235277.726039,
+                        "partition_index": 1,
+                        "agent_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235277.725227,
+                                "compute_began": 1732235276.803635,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "user_message": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "messages": [
+                                            {
+                                                "role": "system",
+                                                "content": "You are a helpful assistant."
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "What's the capital of France?"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "The capital of France is Paris."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "inputs": {
+                                            "model_name": "gpt-4-0613"
+                                        }
+                                    },
+                                    {
+                                        "inputs": {
+                                            "finetune": true
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's the capital of France?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "response": "The capital of France is Paris."
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": "The capital of France is Paris."
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "environment_compute_steps": []
+                    }
+                ]
+            },
+            {
+                "partition_index": 2,
+                "events": [
+                    {
+                        "event_type": "lm_call",
+                        "opened": 1732235277.725993,
+                        "closed": 1732235278.566485,
+                        "partition_index": 2,
+                        "agent_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235278.565533,
+                                "compute_began": 1732235277.725993,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "user_message": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "messages": [
+                                            {
+                                                "role": "system",
+                                                "content": "You are a helpful assistant."
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "What's 2+2?"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "2+2 equals 4."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "inputs": {
+                                            "model_name": "gpt-4-0613"
+                                        }
+                                    },
+                                    {
+                                        "inputs": {
+                                            "finetune": true
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "user_message": "What's 2+2?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "response": "2+2 equals 4."
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": "2+2 equals 4."
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "environment_compute_steps": []
+                    }
+                ]
+            },
+            {
+                "partition_index": 3,
+                "events": [
+                    {
+                        "event_type": "lm_call",
+                        "opened": 1732235278.5664,
+                        "closed": 1732235279.192375,
+                        "partition_index": 3,
+                        "agent_compute_steps": [
+                            {
+                                "event_order": 1,
+                                "compute_ended": 1732235279.1919549,
+                                "compute_began": 1732235278.5664,
+                                "compute_input": [
+                                    {
+                                        "inputs": {
+                                            "user_message": "Who wrote Romeo and Juliet?"
+                                        }
+                                    },
+                                    {
+                                        "messages": [
+                                            {
+                                                "role": "system",
+                                                "content": "You are a helpful assistant."
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "Who wrote Romeo and Juliet?"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "William Shakespeare wrote Romeo and Juliet."
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "inputs": {
+                                            "model_name": "gpt-4-0613"
+                                        }
+                                    },
+                                    {
+                                        "inputs": {
+                                            "finetune": true
+                                        }
+                                    }
+                                ],
+                                "compute_output": [
+                                    {
+                                        "outputs": {
+                                            "user_message": "Who wrote Romeo and Juliet?"
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "response": "William Shakespeare wrote Romeo and Juliet."
+                                        }
+                                    },
+                                    {
+                                        "outputs": {
+                                            "result": "William Shakespeare wrote Romeo and Juliet."
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "environment_compute_steps": []
+                    }
+                ]
+            }
+        ]
+    }
+]

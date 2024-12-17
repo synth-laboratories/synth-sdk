@@ -1,42 +1,37 @@
 # synth_sdk/tracing/decorators.py
-from typing import Callable, Optional, Set, Literal, Any, Dict, Tuple, Union, List
-from functools import wraps
-import time
+import inspect
 import logging
+import time
+from functools import wraps
+from typing import Any, Callable, Dict, List, Literal
 
 from synth_sdk.tracing.abstractions import (
-    Event,
     AgentComputeStep,
-    EnvironmentComputeStep,
-)
-from synth_sdk.tracing.events.store import event_store
-from synth_sdk.tracing.local import _local, logger
-from synth_sdk.tracing.trackers import synth_tracker_sync, synth_tracker_async, SynthTracker
-from synth_sdk.tracing.events.manage import set_current_event
-
-from typing import Callable, Optional, Set, Literal, Any, Dict, Tuple, Union
-from functools import wraps
-import time
-import logging
-from pydantic import BaseModel
-
-from synth_sdk.tracing.abstractions import (
     ArbitraryInputs,
     ArbitraryOutputs,
+    EnvironmentComputeStep,
+    Event,
     MessageInputs,
     MessageOutputs,
-    Event,
-    AgentComputeStep,
-    EnvironmentComputeStep,
 )
-from synth_sdk.tracing.events.store import event_store
-from synth_sdk.tracing.local import system_id_var, active_events_var
-from synth_sdk.tracing.trackers import synth_tracker_async
 from synth_sdk.tracing.events.manage import set_current_event
-
-import inspect
+from synth_sdk.tracing.events.store import event_store
+from synth_sdk.tracing.local import (
+    _local,
+    active_events_var,
+    logger,
+    system_id_var,
+    system_instance_id_var,
+    system_name_var,
+)
+from synth_sdk.tracing.trackers import (
+    synth_tracker_async,
+    synth_tracker_sync,
+)
+from synth_sdk.tracing.utils import get_system_id
 
 logger = logging.getLogger(__name__)
+
 
 # # This decorator is used to trace synchronous functions
 def trace_system_sync(
@@ -49,9 +44,10 @@ def trace_system_sync(
     finetune_step: bool = True,
 ) -> Callable:
     """Decorator for tracing synchronous functions.
-    
+
     Purpose is to keep track of inputs and outputs for compute steps for sync functions.
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -65,11 +61,25 @@ def trace_system_sync(
             else:
                 self_instance = func.__self__
 
-            if not hasattr(self_instance, "system_id"):
-                raise ValueError("Instance missing required system_id attribute")
+            if not hasattr(self_instance, "system_instance_id"):
+                raise ValueError(
+                    "Instance missing required system_instance_id attribute"
+                )
+            if not hasattr(self_instance, "system_name"):
+                raise ValueError("Instance missing required system_name attribute")
 
-            _local.system_id = self_instance.system_id
-            #logger.debug(f"Set system_id in thread local: {_local.system_id}")
+            # Assign system_name to thread-local storage before checking
+            _local.system_name = self_instance.system_name
+
+            if not hasattr(_local, "system_name"):
+                raise ValueError("System name not set in thread local storage")
+
+            # Derive system_id from system_name
+            self_instance.system_id = get_system_id(self_instance.system_name)
+            _local.system_id = self_instance.system_id  # Store in thread local
+
+            _local.system_instance_id = self_instance.system_instance_id
+            # logger.debug(f"Set system_instance_id in thread local: {_local.system_instance_id}")
 
             # Initialize Trace
             synth_tracker_sync.initialize()
@@ -77,15 +87,15 @@ def trace_system_sync(
             # Initialize active_events if not present
             if not hasattr(_local, "active_events"):
                 _local.active_events = {}
-                #logger.debug("Initialized active_events in thread local storage")
+                # logger.debug("Initialized active_events in thread local storage")
 
             event = None
             compute_began = time.time()
             try:
                 if manage_event == "create":
-                    #logger.debug("Creating new event")
+                    # logger.debug("Creating new event")
                     event = Event(
-                        system_id=_local.system_id,
+                        system_instance_id=_local.system_instance_id,
                         event_type=event_type,
                         opened=compute_began,
                         closed=None,
@@ -95,7 +105,7 @@ def trace_system_sync(
                     )
                     if increment_partition:
                         event.partition_index = event_store.increment_partition(
-                            _local.system_id
+                            _local.system_instance_id
                         )
                         logger.debug(
                             f"Incremented partition to: {event.partition_index}"
@@ -110,9 +120,7 @@ def trace_system_sync(
                     if param == "self":
                         continue
                     synth_tracker_sync.track_state(
-                        variable_name=param,
-                        variable_value=value,
-                        origin=origin
+                        variable_name=param, variable_value=value, origin=origin
                     )
 
                 # Execute the function
@@ -133,16 +141,18 @@ def trace_system_sync(
 
                 # Organize traced data by origin
                 for item in traced_inputs:
-                    var_origin = item['origin']
-                    if 'variable_value' in item and 'variable_name' in item:
+                    var_origin = item["origin"]
+                    if "variable_value" in item and "variable_name" in item:
                         # Standard variable input
                         compute_steps_by_origin[var_origin]["inputs"].append(
-                            ArbitraryInputs(inputs={item['variable_name']: item['variable_value']})
+                            ArbitraryInputs(
+                                inputs={item["variable_name"]: item["variable_value"]}
+                            )
                         )
-                    elif 'messages' in item:
+                    elif "messages" in item:
                         # Message input from track_lm
                         compute_steps_by_origin[var_origin]["inputs"].append(
-                            MessageInputs(messages=item['messages'])
+                            MessageInputs(messages=item["messages"])
                         )
                         compute_steps_by_origin[var_origin]["inputs"].append(
                             ArbitraryInputs(inputs={"model_name": item["model_name"]})
@@ -155,16 +165,18 @@ def trace_system_sync(
                         logger.warning(f"Unhandled traced input item: {item}")
 
                 for item in traced_outputs:
-                    var_origin = item['origin']
-                    if 'variable_value' in item and 'variable_name' in item:
+                    var_origin = item["origin"]
+                    if "variable_value" in item and "variable_name" in item:
                         # Standard variable output
                         compute_steps_by_origin[var_origin]["outputs"].append(
-                            ArbitraryOutputs(outputs={item['variable_name']: item['variable_value']})
+                            ArbitraryOutputs(
+                                outputs={item["variable_name"]: item["variable_value"]}
+                            )
                         )
-                    elif 'messages' in item:
+                    elif "messages" in item:
                         # Message output from track_lm
                         compute_steps_by_origin[var_origin]["outputs"].append(
-                            MessageOutputs(messages=item['messages'])
+                            MessageOutputs(messages=item["messages"])
                         )
                     else:
                         logger.warning(f"Unhandled traced output item: {item}")
@@ -215,17 +227,14 @@ def trace_system_sync(
                     logger.info(f"Function result: {result}")
 
                 # Handle event management after function execution
-                if (
-                    manage_event == "end"
-                    and event_type in _local.active_events
-                ):
+                if manage_event == "end" and event_type in _local.active_events:
                     current_event = _local.active_events[event_type]
                     current_event.closed = compute_ended
                     # Store the event
-                    if hasattr(_local, "system_id"):
-                        event_store.add_event(_local.system_id, current_event)
+                    if hasattr(_local, "system_instance_id"):
+                        event_store.add_event(_local.system_instance_id, current_event)
                         # logger.debug(
-                        #     f"Stored and closed event {event_type} for system {_local.system_id}"
+                        #     f"Stored and closed event {event_type} for system {_local.system_instance_id}"
                         # )
                     del _local.active_events[event_type]
 
@@ -234,14 +243,15 @@ def trace_system_sync(
                 logger.error(f"Exception in traced function '{func.__name__}': {e}")
                 raise
             finally:
-                #synth_tracker_sync.finalize()
-                if hasattr(_local, "system_id"):
-                    #logger.debug(f"Cleaning up system_id: {_local.system_id}")
-                    delattr(_local, "system_id")
+                # synth_tracker_sync.finalize()
+                if hasattr(_local, "system_instance_id"):
+                    # logger.debug(f"Cleaning up system_instance_id: {_local.system_instance_id}")
+                    delattr(_local, "system_instance_id")
 
         return wrapper
 
     return decorator
+
 
 def trace_system_async(
     origin: Literal["agent", "environment"],
@@ -253,7 +263,7 @@ def trace_system_async(
     finetune_step: bool = True,
 ) -> Callable:
     """Decorator for tracing asynchronous functions.
-    
+
     Purpose is to keep track of inputs and outputs for compute steps for async functions.
     """
 
@@ -263,21 +273,21 @@ def trace_system_async(
             # logger.debug(f"Starting async_wrapper for {func.__name__}")
             # logger.debug(f"Args: {args}")
             # logger.debug(f"Kwargs: {kwargs}")
-            
+
             # Automatically trace function inputs
             bound_args = inspect.signature(func).bind(*args, **kwargs)
             bound_args.apply_defaults()
-            #logger.debug(f"Bound args: {bound_args.arguments}")
-            
+            # logger.debug(f"Bound args: {bound_args.arguments}")
+
             for param, value in bound_args.arguments.items():
                 if param == "self":
                     continue
-                #logger.debug(f"Tracking input param: {param} = {value}")
+                # logger.debug(f"Tracking input param: {param} = {value}")
                 synth_tracker_async.track_state(
                     variable_name=param,
                     variable_value=value,
                     origin=origin,
-                    io_type="input"
+                    io_type="input",
                 )
 
             # Determine the instance (self) if it's a method
@@ -290,12 +300,18 @@ def trace_system_async(
             else:
                 self_instance = func.__self__
 
-            if not hasattr(self_instance, "system_id"):
-                raise ValueError("Instance missing required system_id attribute")
+            if not hasattr(self_instance, "system_instance_id"):
+                raise ValueError(
+                    "Instance missing required system_instance_id attribute"
+                )
+            if not hasattr(self_instance, "system_name"):
+                raise ValueError("Instance missing required system_name attribute")
 
-            # Set system_id using context variable
-            system_id_token = system_id_var.set(self_instance.system_id)
-            #logger.debug(f"Set system_id in context vars: {self_instance.system_id}")
+            # Set system name and IDs in context variables
+            system_name_var.set(self_instance.system_name)
+            system_id = get_system_id(self_instance.system_name)
+            system_id_var.set(system_id)
+            system_instance_id_var.set(self_instance.system_instance_id)
 
             # Initialize AsyncTrace
             synth_tracker_async.initialize()
@@ -304,15 +320,15 @@ def trace_system_async(
             current_active_events = active_events_var.get()
             if not current_active_events:
                 active_events_var.set({})
-                #logger.debug("Initialized active_events in context vars")
+                # logger.debug("Initialized active_events in context vars")
 
             event = None
             compute_began = time.time()
             try:
                 if manage_event == "create":
-                    #logger.debug("Creating new event")
+                    # logger.debug("Creating new event")
                     event = Event(
-                        system_id=self_instance.system_id,
+                        system_instance_id=self_instance.system_instance_id,
                         event_type=event_type,
                         opened=compute_began,
                         closed=None,
@@ -322,9 +338,11 @@ def trace_system_async(
                     )
                     if increment_partition:
                         event.partition_index = event_store.increment_partition(
-                            system_id_var.get()
+                            system_instance_id_var.get()
                         )
-                        logger.debug(f"Incremented partition to: {event.partition_index}")
+                        logger.debug(
+                            f"Incremented partition to: {event.partition_index}"
+                        )
 
                     set_current_event(event, decorator_type="async")
                     logger.debug(f"Created and set new event: {event_type}")
@@ -339,7 +357,7 @@ def trace_system_async(
                         variable_name=param,
                         variable_value=value,
                         origin=origin,
-                        io_type="input"
+                        io_type="input",
                     )
 
                 # Execute the coroutine
@@ -360,16 +378,18 @@ def trace_system_async(
 
                 # Organize traced data by origin
                 for item in traced_inputs:
-                    var_origin = item['origin']
-                    if 'variable_value' in item and 'variable_name' in item:
+                    var_origin = item["origin"]
+                    if "variable_value" in item and "variable_name" in item:
                         # Standard variable input
                         compute_steps_by_origin[var_origin]["inputs"].append(
-                            ArbitraryInputs(inputs={item['variable_name']: item['variable_value']})
+                            ArbitraryInputs(
+                                inputs={item["variable_name"]: item["variable_value"]}
+                            )
                         )
-                    elif 'messages' in item:
+                    elif "messages" in item:
                         # Message input from track_lm
                         compute_steps_by_origin[var_origin]["inputs"].append(
-                            MessageInputs(messages=item['messages'])
+                            MessageInputs(messages=item["messages"])
                         )
                         compute_steps_by_origin[var_origin]["inputs"].append(
                             ArbitraryInputs(inputs={"model_name": item["model_name"]})
@@ -382,16 +402,18 @@ def trace_system_async(
                         logger.warning(f"Unhandled traced input item: {item}")
 
                 for item in traced_outputs:
-                    var_origin = item['origin']
-                    if 'variable_value' in item and 'variable_name' in item:
+                    var_origin = item["origin"]
+                    if "variable_value" in item and "variable_name" in item:
                         # Standard variable output
                         compute_steps_by_origin[var_origin]["outputs"].append(
-                            ArbitraryOutputs(outputs={item['variable_name']: item['variable_value']})
+                            ArbitraryOutputs(
+                                outputs={item["variable_name"]: item["variable_value"]}
+                            )
                         )
-                    elif 'messages' in item:
+                    elif "messages" in item:
                         # Message output from track_lm
                         compute_steps_by_origin[var_origin]["outputs"].append(
-                            MessageOutputs(messages=item['messages'])
+                            MessageOutputs(messages=item["messages"])
                         )
                     else:
                         logger.warning(f"Unhandled traced output item: {item}")
@@ -440,17 +462,16 @@ def trace_system_async(
                     logger.info(f"Function result: {result}")
 
                 # Handle event management after function execution
-                if (
-                    manage_event == "end"
-                    and event_type in active_events_var.get()
-                ):
+                if manage_event == "end" and event_type in active_events_var.get():
                     current_event = active_events_var.get()[event_type]
                     current_event.closed = compute_ended
                     # Store the event
-                    if system_id_var.get():
-                        event_store.add_event(system_id_var.get(), current_event)
+                    if system_instance_id_var.get():
+                        event_store.add_event(
+                            system_instance_id_var.get(), current_event
+                        )
                         # logger.debug(
-                        #     f"Stored and closed event {event_type} for system {system_id_var.get()}"
+                        #     f"Stored and closed event {event_type} for system {system_instance_id_var.get()}"
                         # )
                     active_events = active_events_var.get()
                     del active_events[event_type]
@@ -461,12 +482,15 @@ def trace_system_async(
                 logger.error(f"Exception in traced function '{func.__name__}': {e}")
                 raise
             finally:
-                #synth_tracker_async.finalize()
-                # Reset context variable for system_id
-                system_id_var.reset(system_id_token)
-                #logger.debug("Cleaning up system_id from context vars")
+                # synth_tracker_async.finalize()
+                if hasattr(_local, "system_instance_id"):
+                    # logger.debug(f"Cleaning up system_instance_id: {_local.system_instance_id}")
+                    delattr(_local, "system_instance_id")
+
         return async_wrapper
+
     return decorator
+
 
 def trace_system(
     origin: Literal["agent", "environment"],
@@ -482,24 +506,36 @@ def trace_system(
 
     Purpose is to keep track of inputs and outputs for compute steps for both sync and async functions.
     """
+
     def decorator(func: Callable) -> Callable:
         # Check if the function is async or sync
         if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
             # Use async tracing
-            #logger.debug("Using async tracing")
+            # logger.debug("Using async tracing")
             async_decorator = trace_system_async(
-                origin, event_type, log_result, manage_event, increment_partition, verbose
+                origin,
+                event_type,
+                log_result,
+                manage_event,
+                increment_partition,
+                verbose,
             )
             return async_decorator(func)
         else:
             # Use sync tracing
-            #logger.debug("Using sync tracing")
+            # logger.debug("Using sync tracing")
             sync_decorator = trace_system_sync(
-                origin, event_type, log_result, manage_event, increment_partition, verbose
+                origin,
+                event_type,
+                log_result,
+                manage_event,
+                increment_partition,
+                verbose,
             )
             return sync_decorator(func)
 
     return decorator
+
 
 def track_result(result, tracker, origin):
     # Helper function to track results, including tuple unpacking
@@ -508,9 +544,7 @@ def track_result(result, tracker, origin):
         for i, item in enumerate(result):
             try:
                 tracker.track_state(
-                    variable_name=f"result_{i}",
-                    variable_value=item,
-                    origin=origin
+                    variable_name=f"result_{i}", variable_value=item, origin=origin
                 )
             except Exception as e:
                 logger.warning(f"Could not track tuple element {i}: {str(e)}")
@@ -518,10 +552,7 @@ def track_result(result, tracker, origin):
         # Track single result as before
         try:
             tracker.track_state(
-                variable_name="result",
-                variable_value=result,
-                origin=origin
+                variable_name="result", variable_value=result, origin=origin
             )
         except Exception as e:
             logger.warning(f"Could not track result: {str(e)}")
-

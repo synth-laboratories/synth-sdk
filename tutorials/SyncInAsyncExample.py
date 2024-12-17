@@ -1,15 +1,17 @@
-from synth_sdk.tracing.decorators import trace_system, trace_system_sync, _local
-from synth_sdk.tracing.trackers import SynthTrackerSync, SynthTrackerAsync, SynthTracker
-from synth_sdk.tracing.upload import upload
-from synth_sdk.tracing.abstractions import TrainingQuestion, RewardSignal, Dataset
-from synth_sdk.tracing.events.store import event_store
-import time
+import asyncio
 import json
 import logging
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
-import asyncio
+import time
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+from synth_sdk.tracing.abstractions import Dataset, RewardSignal, TrainingQuestion
+from synth_sdk.tracing.decorators import _local, trace_system, trace_system_sync
+from synth_sdk.tracing.events.store import event_store
+from synth_sdk.tracing.trackers import SynthTracker, SynthTrackerSync
+from synth_sdk.tracing.upload import upload
 
 # Load environment variables
 load_dotenv()
@@ -23,11 +25,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 class TestAgent:
     def __init__(self):
-        self.system_id = "test_agent_sync"
-        logger.debug("Initializing TestAgent with system_id: %s", self.system_id)
-        
+        self.system_instance_id = "test_agent_sync"
+        logger.debug(
+            "Initializing TestAgent with system_instance_id: %s",
+            self.system_instance_id,
+        )
+
         # Initialize OpenAI client instead of LM
         self.client = OpenAI(api_key=openai_api_key)
         logger.debug("OpenAI client initialized")
@@ -40,20 +46,24 @@ class TestAgent:
         verbose=True,
     )
     def make_lm_call(self, user_message: str) -> str:
-        SynthTrackerSync.track_state(variable_name="user_message", variable_value=user_message, origin="agent")
+        SynthTrackerSync.track_state(
+            variable_name="user_message", variable_value=user_message, origin="agent"
+        )
         logger.debug("Starting LM call with message: %s", user_message)
         response = self.client.chat.completions.create(
             model="gpt-4-turbo-preview",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": user_message},
             ],
-            temperature=1
+            temperature=1,
         )
 
         # Extract the response content
         response_text = response.choices[0].message.content
-        SynthTrackerSync.track_state(variable_name="response", variable_value=response_text, origin="agent")
+        SynthTrackerSync.track_state(
+            variable_name="response", variable_value=response_text, origin="agent"
+        )
 
         logger.debug("LM response received: %s", response_text)
         time.sleep(0.1)
@@ -67,11 +77,15 @@ class TestAgent:
     )
     def process_environment(self, input_data: str) -> dict:
         # Only pass the input data, not self
-        SynthTracker.track_state(variable_name="input_data", variable_value=input_data, origin="environment")
+        SynthTracker.track_state(
+            variable_name="input_data", variable_value=input_data, origin="environment"
+        )
 
         result = {"processed": input_data, "timestamp": time.time()}
 
-        SynthTracker.track_state(variable_name="result", variable_value=result, origin="environment")
+        SynthTracker.track_state(
+            variable_name="result", variable_value=result, origin="environment"
+        )
         return result
 
 
@@ -120,7 +134,7 @@ async def run_test():
             reward_signals=[
                 RewardSignal(
                     question_id=f"q{i}",
-                    system_id=agent.system_id,
+                    system_instance_id=agent.system_instance_id,
                     reward=1.0,
                     annotation="Test reward",
                 )
@@ -140,7 +154,9 @@ async def run_test():
         # Upload traces
         try:
             logger.info("Attempting to upload traces")
-            response, questions_json, reward_signals_json, traces_json = upload(dataset=dataset, verbose=True)
+            response, questions_json, reward_signals_json, traces_json = upload(
+                dataset=dataset, verbose=True
+            )
             logger.info("Upload successful!")
             print("Upload successful!")
 
@@ -177,9 +193,9 @@ async def run_test():
                 logger.debug("Cleaning up event: %s", event_type)
                 if event.closed is None:
                     event.closed = time.time()
-                    if hasattr(_local, "system_id"):
+                    if hasattr(_local, "system_instance_id"):
                         try:
-                            event_store.add_event(_local.system_id, event)
+                            event_store.add_event(_local.system_instance_id, event)
                             logger.debug(
                                 "Successfully cleaned up event: %s", event_type
                             )
@@ -195,9 +211,9 @@ async def run_test():
                             )
         logger.info("Cleanup completed")
 
+
 # Run a sample agent using the sync decorator and tracker
 if __name__ == "__main__":
     logger.info("Starting main execution")
     asyncio.run(run_test())
     logger.info("Main execution completed")
-

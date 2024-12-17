@@ -1,14 +1,10 @@
-from typing import Callable, Optional, Set, Literal, Any, Dict, Tuple, Union
-from functools import wraps
-import threading
 import time
-import logging
-import inspect
-import contextvars
-from pydantic import BaseModel
-from synth_sdk.tracing.local import _local, logger
-from synth_sdk.tracing.events.store import event_store
+from typing import Literal, Optional
+
+
 from synth_sdk.tracing.abstractions import Event
+from synth_sdk.tracing.events.store import event_store
+from synth_sdk.tracing.local import _local, logger
 
 
 def get_current_event(event_type: str) -> "Event":
@@ -22,7 +18,9 @@ def get_current_event(event_type: str) -> "Event":
     return events[event_type]
 
 
-def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", "async"]=None):
+def set_current_event(
+    event: Optional["Event"], decorator_type: Literal["sync", "async"] = None
+):
     """
     Set the current event, ending any existing events of the same type.
     If event is None, it clears the current event of that type.
@@ -30,11 +28,12 @@ def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", 
     if event is None:
         raise ValueError("Event cannot be None when setting current event.")
 
-    #logger.debug(f"Setting current event of type {event.event_type}")
+    # logger.debug(f"Setting current event of type {event.event_type}")
 
     # Check if we're in an async context
     try:
         import asyncio
+
         asyncio.get_running_loop()
         is_async = True
     except RuntimeError:
@@ -48,7 +47,10 @@ def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", 
 
         # If there's an existing event of the same type, end it
         if event.event_type in _local.active_events:
-            if _local.active_events[event.event_type].system_id == event.system_id:
+            if (
+                _local.active_events[event.event_type].system_instance_id
+                == event.system_instance_id
+            ):
                 logger.debug(f"Found existing event of type {event.event_type}")
                 existing_event = _local.active_events[event.event_type]
                 existing_event.closed = time.time()
@@ -56,11 +58,13 @@ def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", 
                     f"Closed existing event of type {event.event_type} at {existing_event.closed}"
                 )
 
-                # Store the closed event if system_id is present
-                if hasattr(_local, "system_id"):
-                    logger.debug(f"Storing closed event for system {_local.system_id}")
+                # Store the closed event if system_instance_id is present
+                if hasattr(_local, "system_instance_id"):
+                    logger.debug(
+                        f"Storing closed event for system {_local.system_instance_id}"
+                    )
                     try:
-                        event_store.add_event(_local.system_id, existing_event)
+                        event_store.add_event(_local.system_instance_id, existing_event)
                         logger.debug("Successfully stored closed event")
                     except Exception as e:
                         logger.error(f"Failed to store closed event: {str(e)}")
@@ -68,31 +72,34 @@ def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", 
 
         # Set the new event
         _local.active_events[event.event_type] = event
-        #logger.debug("New event set as current in thread local")
+        # logger.debug("New event set as current in thread local")
 
     else:
-        from synth_sdk.tracing.local import active_events_var, system_id_var
+        from synth_sdk.tracing.local import active_events_var, system_instance_id_var
+
         # Get current active events from context var
         active_events = active_events_var.get()
-        
+
         # If there's an existing event of the same type, end it
         if event.event_type in active_events:
             existing_event = active_events[event.event_type]
 
-            # Check that the active event has the same system_id as the one we're settting
-            if existing_event.system_id == event.system_id:
+            # Check that the active event has the same system_instance_id as the one we're settting
+            if existing_event.system_instance_id == event.system_instance_id:
                 logger.debug(f"Found existing event of type {event.event_type}")
                 existing_event.closed = time.time()
                 logger.debug(
                     f"Closed existing event of type {event.event_type} at {existing_event.closed}"
                 )
 
-                # Store the closed event if system_id is present
-                system_id = system_id_var.get()
-                if system_id:
-                    logger.debug(f"Storing closed event for system {system_id}")
+                # Store the closed event if system_instance_id is present
+                system_instance_id = system_instance_id_var.get()
+                if system_instance_id:
+                    logger.debug(
+                        f"Storing closed event for system {system_instance_id}"
+                    )
                     try:
-                        event_store.add_event(system_id, existing_event)
+                        event_store.add_event(system_instance_id, existing_event)
                         logger.debug("Successfully stored closed event")
                     except Exception as e:
                         logger.error(f"Failed to store closed event: {str(e)}")
@@ -102,6 +109,7 @@ def set_current_event(event: Optional["Event"], decorator_type: Literal["sync", 
         active_events[event.event_type] = event
         active_events_var.set(active_events)
         logger.debug("New event set as current in context vars")
+
 
 def clear_current_event(event_type: str):
     if hasattr(_local, "active_events"):
@@ -115,7 +123,7 @@ def end_event(event_type: str) -> Optional[Event]:
     if current_event:
         current_event.closed = time.time()
         # Store the event
-        if hasattr(_local, "system_id"):
-            event_store.add_event(_local.system_id, current_event)
+        if hasattr(_local, "system_instance_id"):
+            event_store.add_event(_local.system_instance_id, current_event)
         clear_current_event(event_type)
     return current_event
